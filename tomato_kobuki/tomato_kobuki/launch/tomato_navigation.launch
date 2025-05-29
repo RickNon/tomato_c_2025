@@ -1,0 +1,29 @@
+<launch>
+  <!-- Kobuki bringup -->
+  <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
+
+  <!-- RPLIDAR -->
+  <!-- <include file="$(find rplidar_ros)/launch/view_rplidar_a1.launch">
+    <arg name="serial_port" value="/dev/ttyUSB1" />
+  </include> -->
+  <include file="$(find rplidar_ros)/launch/view_rplidar_a1.launch" />
+
+  <!-- Static TF (base_footprint to laser) -->
+  <!-- <node pkg="tf" type="static_transform_publisher" name="base_to_laser"
+        args="0 0 0.1 0 0 0 base_footprint laser 100" /> -->
+
+  <!-- Map Server -->
+  <arg name="map_file" default="$(find tomato_kobuki)/map/test.yaml"/>
+  <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+  <!-- AMCL -->
+  <node pkg="amcl" type="amcl" name="amcl" output="screen">
+    <param name="odom_frame_id" value="odom"/>
+    <param name="base_frame_id" value="base_footprint"/>
+    <param name="scan_topic" value="/scan"/>
+  </node>
+
+  <!-- Move Base -->
+  <!-- <include file="$(find turtlebot_navigation)/launch/move_base_laser.launch" /> -->
+  <!-- <include file="$(find turtlebot_navigation)/launch/move_base.launch" /> -->
+</launch>
