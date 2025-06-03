@@ -1,4 +1,8 @@
 <launch>
+  <!-- Move Base -->
+  <!-- <include file="$(find turtlebot_navigation)/launch/move_base_laser.launch" /> -->
+  <!-- <include file="$(find turtlebot_navigation)/launch/move_base.launch" /> -->
+  
   <!-- Kobuki bringup -->
   <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
 
@@ -23,7 +27,4 @@
     <param name="scan_topic" value="/scan"/>
   </node>
 
-  <!-- Move Base -->
-  <!-- <include file="$(find turtlebot_navigation)/launch/move_base_laser.launch" /> -->
-  <!-- <include file="$(find turtlebot_navigation)/launch/move_base.launch" /> -->
 </launch>

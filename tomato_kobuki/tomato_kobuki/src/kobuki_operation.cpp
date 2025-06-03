@@ -23,10 +23,10 @@ void KobukiOperation::joy_callback(const sensor_msgs::Joy &joy_msg)
     double rotation_v_tmp = joy_msg.axes[0] * _g_turn;
 
     if( (abs(joy_msg.axes[1])<=0.1)&(abs(joy_msg.axes[0])<=0.1) ){
-        std::cout << "Stop" << std::endl;
+        // std::cout << "Stop" << std::endl;
         kobukiStop();
     }else{
-        std::cout << "Move" << std::endl;
+        // std::cout << "Move" << std::endl;
         kobukiMove(motion_v_tmp, rotation_v_tmp);
     }
 }
@@ -90,10 +90,10 @@ void KobukiOperation::kobukiInterpolate()
 double speed_diff = _control.target_speed - _control.control_speed;
   if (std::abs(speed_diff) < _speed_acc) {
       _control.control_speed = _control.target_speed;
-      std::cout << "No" << std::endl;
+    //   std::cout << "No" << std::endl;
   } else {
       _control.control_speed += (_speed_acc * (speed_diff > 0 ? 1 : -1));
-       std::cout << "OKaaaaaaay" << std::endl;
+    //    std::cout << "OKaaaaaaay" << std::endl;
   }
    
 
