@@ -17,7 +17,7 @@
         args="0 0 0.1 0 0 0 base_footprint laser 100" /> -->
 
   <!-- Map Server -->
-  <arg name="map_file" default="$(find tomato_kobuki)/map/test.yaml"/>
+  <arg name="map_file" default="$(find tomato_kobuki)/map/map_kyositu.yaml"/>
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
   <!-- AMCL -->
