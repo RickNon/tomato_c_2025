@@ -15,7 +15,7 @@ public:
     void spin();
 private:
     void joy_callback(const sensor_msgs::Joy &joy_msg);
-    void kobukiMove(double speed);
+    void kobukiMove(double speed, double turn);
     void kobukiKeep(double duration, bool exit_w_interrupt = true);
 
     void kobukiStop();
