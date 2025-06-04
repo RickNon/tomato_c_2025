@@ -8,6 +8,8 @@
 
     <remap from="cmd_vel" to="/mobile_base/commands/velocity"/>
     <param name="controller_frequency" value="5.0"/>
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+    <rosparam command="load" file="$(find tomato_kobuki)/config/dwa_kobuki.yaml" /> 
   </node>
 
 </launch>
