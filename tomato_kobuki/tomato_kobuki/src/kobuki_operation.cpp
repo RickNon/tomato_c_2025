@@ -1,5 +1,6 @@
 #include "../include/kobuki_operation/kobuki_operation.hpp"
-#include<sensor_msgs/Joy.h>
+#include <geometry_msgs/Twist.h>
+#include <sensor_msgs/Joy.h>
 
 KobukiOperation::KobukiOperation(double freq) :
     _nh(),
@@ -11,6 +12,7 @@ KobukiOperation::KobukiOperation(double freq) :
 
 {
     _joy_sub = _nh.subscribe("joy",10,&KobukiOperation::joy_callback,this);
+    _cmd_sub = _nh.subscribe("cmd_vel", 10, &KobukiOperation::cmd_callback, this);
     _kobuki_pub = _nh.advertise<geometry_msgs::Twist>("/mobile_base/commands/velocity",1);   
 }
 
@@ -31,6 +33,11 @@ void KobukiOperation::joy_callback(const sensor_msgs::Joy &joy_msg)
     }
 }
 
+void KobukiOperation::cmd_callback(const geometry_msgs::Twist &cmd_msg)
+{
+    // Forward raw values to the same ramp filter used for Joy
+    kobukiMove(cmd_msg.linear.x, cmd_msg.angular.z);
+}
 
 void KobukiOperation::spin()
 {

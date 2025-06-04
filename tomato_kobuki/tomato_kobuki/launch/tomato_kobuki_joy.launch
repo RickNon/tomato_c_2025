@@ -25,8 +25,13 @@
 
   <node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
  
-  <node name="kobuki_operation" pkg="tomato_kobuki" type="kobuki_operation" output="screen"/>
-
+  <!-- <node name="kobuki_operation" pkg="tomato_kobuki" type="kobuki_operation" output="screen"/> -->
+  <node pkg="tomato_kobuki"
+        type="kobuki_operation"
+        name="kobuki_operation"
+        output="screen">
+    <remap from="cmd_vel" to="/kobuki_operation/cmd_vel"/> 
+  </node>
  
 
 </launch>

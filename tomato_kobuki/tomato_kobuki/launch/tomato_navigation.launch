@@ -1,29 +1,21 @@
 <launch>
-  <!-- Remap -->
-  <remap from="/cmd_vel_mux/output" to="/mobile_base/commands/velocity"/>
 
-  <!-- Move Base -->
-  <include file="$(find tomato_kobuki)/launch/move_base_laser.launch" />
-    <!-- <param name="controller_frequency" value="5.0"/>
-    <remap from="cmd_vel" to="/mobile_base/commands/velocity"/>
-  </include> -->
-  
-  <!-- Kobuki bringup -->
-  <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
+  <!-- Move base -->
+  <group>
+    <remap from="/mobile_base/commands/velocity"
+          to="/kobuki_operation/cmd_vel"/>
+    <include file="$(find tomato_kobuki)/launch/move_base_laser.launch" />
+  </group>
+
+  <!-- Kobuki operation -->
+  <group>
+    <remap from="cmd_vel" to="/cmd_vel_mux/output/cmd_vel"/>
+    <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
+  </group>
+
 
   <!-- RPLIDAR -->
   <include file="$(find rplidar_ros)/launch/view_rplidar_a1.launch" />
-
-  <!-- Static TF (base_footprint to laser) -->
-  <!-- same command in tomato_kobuki_joy.launch -->
-  <!-- <node pkg="tf" type="static_transform_publisher" name="base_to_laser"
-        args="0 0 0.1 0 0 0 base_footprint laser 100" /> -->
-
-  <!-- <node pkg="tf" type="static_transform_publisher" name="odom_to_base" 
-        args="0 0 0 0 0 3.14159 odom base_footprint 100"/> -->
-  <node pkg="tf" type="static_transform_publisher" name="footprint_to_link" 
-        args="0 0 0 0 0 -1.5708 base_footprint base_link 100"/>
-
 
   <!-- Map Server -->
   <arg name="map_file" default="$(find tomato_kobuki)/map/map_kyositu.yaml"/>
@@ -38,5 +30,11 @@
     <param name="update_min_d"          value="0.05"/>
     <param name="update_min_a"          value="0.1"/>
   </node>
+
+  <node pkg="topic_tools"
+      type="relay"
+      name="nav_cmd_relay"
+      args="/mobile_base/commands/velocity /kobuki_operation/cmd_vel"
+      output="screen"/>
 
 </launch>
