@@ -1,11 +1,11 @@
 DWAPlannerROS:
   # Robot limits (matched to Kobuki spec)
-  max_vel_x:        0.55      # [m/s]
-  min_vel_x:        0.10
-  max_vel_theta:    1.2       # [rad/s]
-  min_vel_theta:    -1.2
-  acc_lim_x:        1.0       # linear accel limit
-  acc_lim_theta:    2.0       # angular accel limit
+  max_vel_x:        0.30      # [m/s]
+  min_vel_x:        0.05
+  max_vel_theta:    0.8      # [rad/s]
+  min_vel_theta:    -0.8
+  acc_lim_x:        0.7       # linear accel limit
+  acc_lim_theta:    1.5       # angular accel limit
 
   # Forward simulation
   sim_time:         2.0       # longer sim for smoother curves
