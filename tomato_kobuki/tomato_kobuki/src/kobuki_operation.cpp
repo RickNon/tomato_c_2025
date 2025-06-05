@@ -2,6 +2,12 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 
+double _g_speed = 0.2;
+double _g_turn = 1;
+double motion_v_tmp   = 0.0;
+double rotation_v_tmp = 0.0;
+    
+
 KobukiOperation::KobukiOperation(double freq) :
     _nh(),
     _freq(freq),
@@ -18,11 +24,13 @@ KobukiOperation::KobukiOperation(double freq) :
 
 void KobukiOperation::joy_callback(const sensor_msgs::Joy &joy_msg)
 {
-    double _g_speed = 0.2;
-    double motion_v_tmp = joy_msg.axes[1] * _g_speed;
 
-    double _g_turn = 1;
-    double rotation_v_tmp = joy_msg.axes[0] * _g_turn;
+    motion_v_tmp = joy_msg.axes[1] * _g_speed;
+    if (joy_msg.axes[1] < 0){
+        rotation_v_tmp = - joy_msg.axes[0] * _g_turn;
+    } else {
+        rotation_v_tmp = joy_msg.axes[0] * _g_turn;
+    }
 
     if( (abs(joy_msg.axes[1])<=0.1)&(abs(joy_msg.axes[0])<=0.1) ){
         // std::cout << "Stop" << std::endl;
