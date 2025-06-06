@@ -164,7 +164,7 @@ int main(int argc, char ** argv)
     dxl_comm_result = packetHandler1->read2ByteTxRx(portHandler, DXL_AX1_ID, ADDR_PRESENT_POSITION_P1, (uint16_t *)&position_ax_read, &dxl_error);
     if (dxl_comm_result == COMM_SUCCESS)
     {
-      ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_AX1_ID, position_ax_read);
+      // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_AX1_ID, position_ax_read);
     } else {
       ROS_ERROR("Failed to get position! Result: %d", dxl_comm_result);
     }
@@ -174,29 +174,29 @@ int main(int argc, char ** argv)
     if (dxl_comm_result == COMM_SUCCESS) {
       //ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_MX_ID, vel_mx_write);
     } else {
-      ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
+      // ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
     }
    
     dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_MX_ID, ADDR_PRESENT_VELOCITY_P2, (uint16_t *)&vel_mx_read, &dxl_error);
     if (dxl_comm_result == COMM_SUCCESS)
     {
-      ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_MX_ID, vel_mx_read);
+      // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_MX_ID, vel_mx_read);
     } else {
       ROS_INFO("Failed to get position! Result: %d", dxl_comm_result);
     }
     
-    // if (position_ax_write  < pitch_down) position_ax_write = pitch_down;
+    // Yを押したら手先が上を向く
     if(pitch_up){
-       position_ax_write = position_ax_write - scale_ax*3.0;
+       position_ax_write = position_ax_write + scale_ax*3.0;
     }
 
-    if (position_ax_write > pitch_flat) position_ax_write = pitch_flat;
+    if (position_ax_write < pitch_flat) position_ax_write = pitch_flat;
     // Aを押したら指定位置に戻る
     while(pitch_down){
-      if(position_ax_write > pitch_flat){
+      if(position_ax_write < pitch_flat){
         pitch_down = false;
       } 
-      position_ax_write = position_ax_write + scale_ax;
+      position_ax_write = position_ax_write - scale_ax;
     }
 
     cycle_rate.sleep();
