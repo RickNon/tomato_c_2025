@@ -71,6 +71,8 @@ void joyCallback(const sensor_msgs::Joy& msg)
     vel_mx_write = -250;
   }
 }
+// mukai add
+////////////////////////////////////////////////////////////////////////////////////
 double inverse_sin_0_to_pi(double x) {
     if (x >= 0)
         return std::asin(x);           // x ∈ [0,1], θ ∈ [0, π/2]
@@ -102,7 +104,7 @@ Result inversed_kinematics_mukai(double hand_pos_x,double hand_pos_y,double hand
   double gamma = hand_angle - alpha - beta;
   return {M_PI/2-alpha, beta, gamma};
 }
-
+/////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char ** argv)
 {
