@@ -85,8 +85,8 @@ double atan_0_to_pi(double y, double x) {
 }
 struct Result{
   double A_angle_0;
-  double A_angle_0;
-  double A_angle_0;
+  double A_angle_1;
+  double A_angle_2;
 }
 Result inversed_kinematics_mukai(double hand_pos_x,double hand_pos_y,double hand_angle){
   l_0=83;
