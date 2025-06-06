@@ -32,3 +32,6 @@ target_link_libraries(ax_joy ${catkin_LIBRARIES})
 
 add_executable(ax_mx_joy src/ax_mx_joy.cpp)
 target_link_libraries(ax_mx_joy ${catkin_LIBRARIES})
+
+add_executable(ax_mx_custom src/ax_mx_custom.cpp)
+target_link_libraries(ax_mx_custom ${catkin_LIBRARIES})
