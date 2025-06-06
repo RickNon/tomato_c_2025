@@ -1,0 +1,21 @@
+1,ラズパイにモバイルバッテリーのケーブルをつなぐ
+
+2,カメラ、kobuki、arm、Lidarを接続（接続順は今の所不明）
+
+3,遠隔操縦用PCにてターミナルで以下のコマンドを実行(IPアドレス部分は変更の可能性あり）
+	ssh ubuntu@10.32.41.98
+	
+4,パスワードを要求されるので以下を入力(その前にfingerpirntがどうのこうのはyesでok)
+	ubuntutomato
+
+5,新たなターミナルを開き遠隔操縦側のpcにて以下のコマンドを入力
+	roscore
+	rosrun joy joy_node
+	rqt
+
+6,4のコマンドによりラズパイのターミナルに変化したターミナルにロボット側で打つべきコマンドを入力（複数のターミナルを用いる場合一つ一つにログインが必要）現状のコマンドをいかに示す（Lidarのコマンドを増やす必要あり）
+	roslaunch tomato_kobuki tomato_kobuki_joy.launch
+	roslaunch tomato_kobuki tomato_cam.launch
+	roslaunch tomato_arm_ik crane_joy.launch
+
+7,プログラムの初動はkobukの挙動が不安定な可能性が高い。その場合はコントローラにてkobukiの足を回しながらkobukiを持ち上げるなどをしてどうにかまっすぐ走るようにする今のところ原因は不明（2024からの不調である）

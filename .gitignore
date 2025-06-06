@@ -1,3 +1,5 @@
 *.vscode
 *._.
 *.DS_Stores
+
+tomato_kobuki/kobuki/
