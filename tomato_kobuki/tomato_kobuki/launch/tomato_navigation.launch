@@ -19,6 +19,7 @@
 
   <!-- Map Server -->
   <arg name="map_file" default="$(find tomato_kobuki)/map/map_kyositu.yaml"/>
+  <!-- <arg name="map_file" default="$(find tomato_kobuki)/map/kyositu_2.yaml"/> -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
 
   <!-- AMCL -->

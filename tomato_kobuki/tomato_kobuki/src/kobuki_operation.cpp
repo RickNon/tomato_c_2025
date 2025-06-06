@@ -6,6 +6,8 @@ double _g_speed = 0.2;
 double _g_turn = 1;
 double motion_v_tmp   = 0.0;
 double rotation_v_tmp = 0.0;
+
+geometry_msgs::Twist command;
     
 
 KobukiOperation::KobukiOperation(double freq) :
@@ -121,7 +123,19 @@ double speed_diff = _control.target_speed - _control.control_speed;
   } else {
       _control.control_turn += (_turn_acc * (turn_diff > 0 ? 1 : -1));
   }
-    geometry_msgs::Twist command;
+    command.linear.x = _control.control_speed;
+    command.angular.z = _control.control_turn;
+    _kobuki_pub.publish(command);
+}
+
+void KobukiOperation::cmdInterpolate()
+{
+    double speed_diff = _control.target_speed - _control.control_speed;
+    double turn_diff  = _control.target_turn  - _control.control_turn;
+
+    _control.control_speed += speed_diff / 5;
+    _control.control_turn  += turn_diff  / 10;
+
     command.linear.x = _control.control_speed;
     command.angular.z = _control.control_turn;
     _kobuki_pub.publish(command);

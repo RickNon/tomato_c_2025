@@ -21,6 +21,7 @@ private:
 
     void kobukiStop();
     void kobukiInterpolate();
+    void cmdInterpolate();
     void normalOperation();
 
     ros::NodeHandle _nh;
