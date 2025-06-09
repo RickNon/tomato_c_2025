@@ -20,9 +20,6 @@ namespace dynamixel {
   class PacketHandler;
 }
 
-//------------------------------------------------------------------------------
-// Protocol and device definitions
-//------------------------------------------------------------------------------
 #define PROTOCOL_VERSION1 1.0    // AX protocol
 #define PROTOCOL_VERSION2 2.0    // MX/XC protocol
 
@@ -60,9 +57,6 @@ namespace dynamixel {
 #define ADDR_PRESENT_POSITION_P1 36
 #define ADDR_MOVING_SPEED_P1     32
 
-//------------------------------------------------------------------------------
-// External variables defined in .cpp
-//------------------------------------------------------------------------------
 extern dynamixel::PortHandler *portHandler;       // Serial port handler
 extern dynamixel::PacketHandler *packetHandler1;  // AX packet handler
 extern dynamixel::PacketHandler *packetHandler2;  // MX packet handler
@@ -93,10 +87,6 @@ extern float cmd_y;
 extern std::vector<int> DXL_AX_ID;  // List of AX servo IDs
 extern std::vector<int> position_ax; // Target positions for AX servos
 
-//------------------------------------------------------------------------------
-// Utility and callback function declarations
-//------------------------------------------------------------------------------
-
 /**
  * @brief Compute atan2 in range [0, π]
  * @param y y-coordinate
@@ -113,7 +103,7 @@ float atan_0_to_pi(float y, float x);
 float inverse_sin_0_to_pi(float x);
 
 /**
- * @struct Angles
+ * @struct InverseAngles
  * @brief Holds output angles for inverse kinematics
  */
 struct InverseAngles {
