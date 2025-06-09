@@ -6,9 +6,6 @@
 
 using namespace dynamixel;
 
-//------------------------------------------------------------------------------
-// Global variables (defined in header)
-//------------------------------------------------------------------------------
 PortHandler* portHandler;
 PacketHandler* packetHandler1;
 PacketHandler* packetHandler2;
@@ -33,12 +30,12 @@ int pitch_flat = 512;
 float cmd_x = 0.0f;
 float cmd_y = 0.0f;
 
-std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID, DXL_AX5_ID };
+const uint16_t MOVING_SPEED_P1 = 200;
+GroupSyncWrite* gsync_ax = nullptr;
+
+std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID };
 std::vector<int> position_ax(DXL_AX_ID.size(), position_ax_write);
 
-//------------------------------------------------------------------------------
-// Utility and callback implementations
-//------------------------------------------------------------------------------
 
 float atan_0_to_pi(float y, float x) {
     float angle = std::atan2(y, x);
@@ -117,16 +114,12 @@ void joyCallback(const sensor_msgs::Joy& msg) {
     }
 }
 
-//------------------------------------------------------------------------------
-// Main loop
-//------------------------------------------------------------------------------
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ax_mx_custom_node");
     ros::NodeHandle nh;
     ros::NodeHandle pnh("~");
     ros::Rate rate(NODE_FREQUENCY);
 
-    // Subscribe to joystick and advertise status
     ros::Subscriber sub = nh.subscribe("joy", 10, joyCallback);
     ros::Publisher pub = nh.advertise<std_msgs::String>("status", 10);
 
@@ -154,6 +147,15 @@ int main(int argc, char** argv) {
         return -1;
     }
 
+    // set write handler for AX
+    gsync_ax = new GroupSyncWrite(portHandler, packetHandler1,
+                                  ADDR_GOAL_POSITION_P1, 2);
+    for (uint8_t id : DXL_AX_ID) {
+        packetHandler1->write2ByteTxRx(portHandler, id,
+                                      ADDR_MOVING_SPEED_P1,
+                                      MOVING_SPEED_P1, &dxl_error);
+    }
+
     // Enable torque for AX servo
     dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, DXL_AX1_ID, ADDR_TORQUE_ENABLE_P1, 1, &dxl_error);
     if (dxl_comm_result != COMM_SUCCESS) {
@@ -177,14 +179,16 @@ int main(int argc, char** argv) {
     while (ros::ok()) {
         ros::spinOnce();
 
-        // Write positions to AX servos
+        // Write positions to AX servos simulteneously
+        gsync_ax->clearParam();
         for (size_t i = 0; i < DXL_AX_ID.size(); ++i) {
-            dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, DXL_AX_ID[i], ADDR_GOAL_POSITION_P1, position_ax[i], &dxl_error);
-            if (dxl_comm_result != COMM_SUCCESS) {
-                ROS_ERROR("Failed to set position for AX ID %d", DXL_AX_ID[i]);
-            }
-            packetHandler1->read2ByteTxRx(portHandler, DXL_AX_ID[i], ADDR_PRESENT_POSITION_P1, &position_ax_read, &dxl_error);
+            uint8_t param[2] = {
+                DXL_LOBYTE(position_ax[i]),
+                DXL_HIBYTE(position_ax[i])
+            };
+            gsync_ax->addParam(DXL_AX_ID[i], param);
         }
+        gsync_ax->txPacket();
 
         // Write velocity to MX motor
         dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_MX_ID, ADDR_GOAL_VELOCITY_P2, vel_mx_write, &dxl_error);

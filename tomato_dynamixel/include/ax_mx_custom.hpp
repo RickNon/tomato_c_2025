@@ -6,13 +6,12 @@
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/PointStamped.h>
 #include "std_msgs/String.h"
+#include <vector>
+#include <cmath>
 
 // Include Dynamixel SDK
 #include "dynamixel_sdk/dynamixel_sdk.h"
-
-// STL
-#include <vector>
-#include <cmath>
+#include <dynamixel_sdk/group_sync_write.h>
 
 // Use the dynamixel namespace for SDK classes
 namespace dynamixel {
@@ -32,9 +31,8 @@ namespace dynamixel {
 #define DXL_AX2_ID       2      // Base joint 1
 #define DXL_AX3_ID       3      // Base joint 2
 #define DXL_AX4_ID       4      // Base joint 3
-#define DXL_AX5_ID       5      // End-effector servo
+
 #define DXL_MX_ID        10     // Gripper motor
-#define DXL_XC_ID        20     // Auxiliary motor (unused)
 
 #define BAUDRATE         1000000
 
@@ -60,6 +58,7 @@ namespace dynamixel {
 #define ADDR_TORQUE_ENABLE_P1    24
 #define ADDR_GOAL_POSITION_P1    30
 #define ADDR_PRESENT_POSITION_P1 36
+#define ADDR_MOVING_SPEED_P1     32
 
 //------------------------------------------------------------------------------
 // External variables defined in .cpp
