@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>
+
+<!-- Kobuki Operation Joy -->
+<include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
+
+<!-- Dynamixel motors -->
+    <!-- AX(ID:4), MX -->
+    <node name="ax_mx_joy" pkg="tomato_dynamixel" type="ax_mx_custom" output="screen">
+        <param name="dev" value="/dev/ttyUSB2"/>
+    </node>
+
+    <!-- AX(ID:1,2,3) -->
+    <!-- アームの制御 -->
+
+    <!-- AX(ID:5) -->
+    <!-- ハンドの制御 -->
+
+<!-- Camera -->
+
+
+</launch>
