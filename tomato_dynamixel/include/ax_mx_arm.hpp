@@ -28,6 +28,7 @@ namespace dynamixel {
 #define DXL_AX2_ID       2      // Base joint 1
 #define DXL_AX3_ID       3      // Base joint 2
 #define DXL_AX4_ID       4      // Base joint 3
+#define DXL_AX5_ID       5      // Hand servo
 
 #define DXL_MX_ID        10     // Gripper motor
 

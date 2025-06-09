@@ -2,6 +2,7 @@
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/PointStamped.h>
 #include <std_msgs/String.h>
+#include <algorithm>
 #include "ax_mx_arm.hpp"  // Include corresponding header
 
 using namespace dynamixel;
@@ -24,8 +25,12 @@ float vel_mx = 0.0f;
 
 bool pitch_up = false;
 bool pitch_down = false;
-float scale_pitch = 4.0f;              // Scaling factor for AX servos (pitch control)
+float scale_pitch = 4.0f;           // Scaling factor for AX servos (pitch control)
 int pitch_flat = 512;
+
+bool hand_left = false;             // hand left rotation
+bool hand_right = false;            // hand right rotation
+float scale_hand = 3.0f;
 
 float cmd_x = 0.0f;
 float cmd_y = 0.0f;
@@ -34,14 +39,21 @@ const uint16_t MOVING_SPEED_P1 = 100;
 GroupSyncWrite* gsync_ax = nullptr;
 
 // Set AX IDs
-std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID };
+std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID, DXL_AX5_ID };
 std::vector<int> position_ax(DXL_AX_ID.size(), position_ax_write);
 
 // Set AX for pitch
-const int PITCH_ID  = DXL_AX1_ID;
+const int PITCH_ID = DXL_AX1_ID;
 const size_t PITCH_IDX = std::distance(
     DXL_AX_ID.begin(),
     std::find(DXL_AX_ID.begin(), DXL_AX_ID.end(), PITCH_ID)
+);
+
+// Set AX for hand
+const int HAND_ID = DXL_AX5_ID;
+const size_t HAND_IDX = std::distance(
+    DXL_AX_ID.begin(),
+    std::find(DXL_AX_ID.begin(), DXL_AX_ID.end(), HAND_ID)
 );
 
 float atan_0_to_pi(float y, float x) {
@@ -88,10 +100,23 @@ void hand_picth() {
       break;
     }
     position_ax_write -= scale_pitch * 5.0f;
-    position_ax[0] = position_ax_write;
+    position_ax[PITCH_IDX] = position_ax_write;
   }
 
   position_ax[PITCH_IDX] = position_ax_write;
+}
+
+void hand_operation() {
+  // left/right rotation for hand servo
+
+  int next = static_cast<int>(position_ax[HAND_IDX]);
+  if (hand_left)  next += static_cast<int>(scale_hand);
+  if (hand_right) next -= static_cast<int>(scale_hand);
+
+  if (next < 0)    next = 0;
+  if (next > 600) next = 600;
+
+  position_ax[HAND_IDX] = static_cast<uint16_t>(next);
 }
 
 void joyCallback(const sensor_msgs::Joy& msg) {
@@ -113,6 +138,10 @@ void joyCallback(const sensor_msgs::Joy& msg) {
   if (msg.buttons[3] == 0) {
     pitch_up = false;
   }
+
+  // Hand : LB (4), RB (5)
+  hand_left  = (msg.buttons[4] == 1) && (msg.buttons[5] == 0);  // LB 単押し
+  hand_right = (msg.buttons[5] == 1) && (msg.buttons[4] == 0);  // RB 単押し
 
   // Lift control for MX motor (axes[7])
   vel_mx_write = static_cast<int16_t>(msg.axes[7] * scale_mx);
@@ -190,6 +219,9 @@ int main(int argc, char** argv) {
 
     // Write hand pitch
     hand_picth(); 
+
+    // Write hand rotation
+    hand_operation();
 
     // Write positions to AX servos simulteneously
     gsync_ax->clearParam();
