@@ -41,4 +41,5 @@ private:
     int _print_status;
     int _stop_count;
     bool _exit_program;
+    bool _no_acc_limit; // 追加：加速度制限をスキップするかのフラグ
 };

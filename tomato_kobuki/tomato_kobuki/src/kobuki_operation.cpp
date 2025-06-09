@@ -21,6 +21,9 @@ void KobukiOperation::joy_callback(const sensor_msgs::Joy &joy_msg)
 
     double _g_turn = 1;
     double rotation_v_tmp = joy_msg.axes[0] * _g_turn;
+    
+    //加速度制限の無視
+     _no_acc_limit = (std::abs(joy_msg.axes[0]) <= 0.5 && std::abs(joy_msg.axes[1]) <= 0.5);
 
     if( (abs(joy_msg.axes[1])<=0.1)&(abs(joy_msg.axes[0])<=0.1) ){
         std::cout << "Stop" << std::endl;
@@ -85,27 +88,35 @@ void KobukiOperation::normalOperation()
 void KobukiOperation::kobukiInterpolate()
 {
      // 線形速度の補間（加速度制限）
-  /*
-*/
-double speed_diff = _control.target_speed - _control.control_speed;
-  if (std::abs(speed_diff) < _speed_acc) {
-      _control.control_speed = _control.target_speed;
-      std::cout << "No" << std::endl;
-  } else {
-      _control.control_speed += (_speed_acc * (speed_diff > 0 ? 1 : -1));
-       std::cout << "OKaaaaaaay" << std::endl;
-  }
-   
+  
+    double speed_diff = _control.target_speed - _control.control_speed;
+    double turn_diff = _control.target_turn - _control.control_turn;
 
-  // 角速度の補間（加速度制限）
-  /*
-*/
- double turn_diff = _control.target_turn - _control.control_turn;
-  if (std::abs(turn_diff) < _turn_acc) {
-      _control.control_turn = _control.target_turn;
-  } else {
-      _control.control_turn += (_turn_acc * (turn_diff > 0 ? 1 : -1));
-  }
+    if (_no_acc_limit) {
+        // 加速度制限なしで即時反映
+        _control.control_speed = _control.target_speed;
+        _control.control_turn = _control.target_turn;
+    } 
+    else {
+          // 線形速度の補間（加速度制限）
+        if (std::abs(speed_diff) < _speed_acc) {
+            _control.control_speed = _control.target_speed;
+            //  std::cout << "No" << std::endl;
+        } 
+        else {
+            _control.control_speed += (_speed_acc * (speed_diff > 0 ? 1 : -1));
+            //std::cout << "OKaaaaaaay" << std::endl;
+        }
+          // 角速度の補間（加速度制限）
+ 
+        if (std::abs(turn_diff) < _turn_acc) {
+            _control.control_turn = _control.target_turn;
+        } 
+        else {
+            _control.control_turn += (_turn_acc * (turn_diff > 0 ? 1 : -1));
+        }
+
+    }
     geometry_msgs::Twist command;
     command.linear.x = _control.control_speed;
     command.angular.z = _control.control_turn;
