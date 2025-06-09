@@ -2,7 +2,7 @@
 #include <sensor_msgs/Joy.h>
 #include <geometry_msgs/PointStamped.h>
 #include <std_msgs/String.h>
-#include "ax_mx_custom.hpp"  // Include corresponding header
+#include "ax_mx_arm.hpp"  // Include corresponding header
 
 using namespace dynamixel;
 
@@ -124,7 +124,7 @@ void joyCallback(const sensor_msgs::Joy& msg) {
 }
 
 int main(int argc, char** argv) {
-  ros::init(argc, argv, "ax_mx_custom_node");
+  ros::init(argc, argv, "ax_mx_arm_node");
   ros::NodeHandle nh;
   ros::NodeHandle pnh("~");
   ros::Rate rate(NODE_FREQUENCY);
