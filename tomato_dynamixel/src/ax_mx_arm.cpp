@@ -244,9 +244,6 @@ int main(int argc, char** argv) {
     if (27556 > target_point.point.x*target_point.point.x + target_point.point.y*target_point.point.y){
       target_point.point.x += cmd_x;
       target_point.point.y += cmd_y;  
-    }else{
-      target_point.point.x -= cmd_x;
-      target_point.point.y -= cmd_y;
     }
     InverseAngles inv_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
     position_ax[1] = int(inv_res.A_angle_2 / M_PI / 2 * 1024 + 512);
