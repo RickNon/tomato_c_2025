@@ -1,22 +1,22 @@
 <?xml version="1.0" ?>
 <launch>
 
+<!-- /dev/ttyUSB -->
+<!-- 0: Koubki, 1: RPLidar, 2: U2D2, 3: Camera1, 5: Camera2 -->
+
 <!-- Kobuki Operation Joy -->
 <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
 
 <!-- Dynamixel motors -->
-    <!-- AX(ID:4), MX -->
-    <node name="ax_mx_joy" pkg="tomato_dynamixel" type="ax_mx_custom" output="screen">
-        <param name="dev" value="/dev/ttyUSB2"/>
-    </node>
-
-    <!-- AX(ID:1,2,3) -->
-    <!-- アームの制御 -->
-
-    <!-- AX(ID:5) -->
-    <!-- ハンドの制御 -->
+    <!-- 昇降機、アーム、ハンドの制御 -->
+    <node name="ax_mx_arm" pkg="tomato_dynamixel" type="ax_mx_arm" output="screen">
+		<param name="dev" value="/dev/ttyUSB2"/>
+	</node> 
 
 <!-- Camera -->
+<node pkg="usb_cam" type="usb_cam_node" name="cam_image1" output="screen">
+    <param name="video_device" type="string" value="/dev/video3"/>
+</node>
 
 
 </launch>
