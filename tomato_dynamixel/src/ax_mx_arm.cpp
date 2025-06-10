@@ -77,7 +77,7 @@ InverseAngles inversed_kinematics(float hand_pos_x, float hand_pos_y, float hand
   float x_2 = hand_pos_x - l_2 * cos(hand_angle);
   float y_2 = hand_pos_y - l_2 * sin(hand_angle);
   float L_02 = sqrt(x_2*x_2 + y_2*y_2);
-  if(L_02 > l_0 + l_1) L_02 = l_0+l_1-1;
+  if(L_02 > l_0 + l_1) L_02 = l_0+l_1-5;
   
   float cosbeta = -(l_1*l_1+l_0*l_0-L_02*L_02)/(2*l_1*l_0);
   float beta = acos(cosbeta);
