@@ -2,7 +2,7 @@
 <launch>
 
 <!-- /dev/ttyUSB -->
-<!-- 0: Koubki, 1: RPLidar, 2: U2D2, 3: Camera1, 5: Camera2 -->
+<!-- 0: Koubki, 1: RPLidar, 2: U2D2 -->
 
 <!-- Kobuki Operation Joy -->
 <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
@@ -14,9 +14,14 @@
 	</node> 
 
 <!-- Camera -->
+<!-- /dev/video -->
+<!-- 0: Camera1, 2: Camera2 -->
 <node pkg="usb_cam" type="usb_cam_node" name="cam_image1" output="screen">
-    <param name="video_device" type="string" value="/dev/video3"/>
+    <param name="video_device" type="string" value="/dev/video0"/>
 </node>
+<!-- <node pkg="usb_cam" type="usb_cam_node" name="cam_image1" output="screen">
+    <param name="video_device" type="string" value="/dev/video2"/>
+</node> -->
 
 
 </launch>
