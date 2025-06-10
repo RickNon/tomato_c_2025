@@ -1,30 +1,26 @@
 <?xml version="1.0" ?>
 <launch>
 
-<!-- /dev/ttyUSB -->
-<!-- 0: Koubki, 1: RPLidar, 2: U2D2 -->
+    <!-- /dev/ttyUSB -->
+    <!-- 0: Koubki, 1: RPLidar, 2: U2D2 -->
 
-<!-- Kobuki Operation Joy -->
-<include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
+    <!-- Kobuki Operation Joy -->
+    <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
 
-<!-- Dynamixel motors -->
-    <!-- 昇降機、アーム、ハンドの制御 -->
-    <node name="ax_mx_arm" pkg="tomato_dynamixel" type="ax_mx_arm" output="screen">
-		<param name="dev" value="/dev/ttyUSB2"/>
-	</node> 
+    <!-- Dynamixel motors -->
+        <!-- 昇降機、アーム、ハンドの制御 -->
+        <node name="ax_mx_arm" pkg="tomato_dynamixel" type="ax_mx_arm" output="screen">
+            <param name="dev" value="/dev/ttyUSB2"/>
+        </node> 
 
-<!-- Camera -->
-<!-- /dev/video -->
-<!-- 0: Camera1, 2: Camera2 -->
-<node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
-  <param name="video_device" type="string" value="/dev/video0"/>
-</node>
-<!-- <node pkg="usb_cam" type="usb_cam_node" name="cam_image1" output="log">
+    <!-- Camera -->
+    <!-- /dev/video -->
+    <!-- 0: Camera1, 2: Camera2 -->
+    <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
     <param name="video_device" type="string" value="/dev/video0"/>
-</node> -->
-<!-- <node pkg="usb_cam" type="usb_cam_node" name="cam_image1" output="screen">
+    </node>
+    <!-- <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
     <param name="video_device" type="string" value="/dev/video2"/>
-</node> -->
-
+    </node> -->
 
 </launch>
