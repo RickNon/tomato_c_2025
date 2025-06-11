@@ -48,7 +48,10 @@ void KobukiOperation::joy_callback(const sensor_msgs::Joy &joy_msg)
 void KobukiOperation::cmd_callback(const geometry_msgs::Twist &cmd_msg)
 {
     // Forward raw values to the same ramp filter used for Joy
-    kobukiMove(cmd_msg.linear.x, cmd_msg.angular.z);
+    _control.target_speed = cmd_msg.linear.x;
+    _control.target_turn  = cmd_msg.angular.z;
+    cmdInterpolate();
+    // kobukiMove(cmd_msg.linear.x, cmd_msg.angular.z);
 }
 
 void KobukiOperation::spin()
