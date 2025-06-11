@@ -1,0 +1,19 @@
+DWAPlannerROS:
+  # Robot limits (matched to Kobuki spec)
+  max_vel_x:        0.30      # [m/s]
+  min_vel_x:        0.05
+  max_vel_theta:    0.8      # [rad/s]
+  min_vel_theta:    -0.8
+  acc_lim_x:        0.7       # linear accel limit
+  acc_lim_theta:    1.5       # angular accel limit
+
+  # Forward simulation
+  sim_time:         2.0       # longer sim for smoother curves
+  vx_samples:       20
+  vtheta_samples:   40
+  controller_frequency: 15.0  # run planner at 15 Hz (was ~5 Hz)
+
+  # Biases
+  path_distance_bias:  32.0   # stay close to global path
+  goal_distance_bias:  20.0   # heading to goal
+  occdist_scale:       0.02   # obstacle cost weight (smaller ⇒ less jitter)

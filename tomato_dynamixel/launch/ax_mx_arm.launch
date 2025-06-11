@@ -1,0 +1,7 @@
+<launch>
+	<node name="joy_node" pkg="joy" type="joy_node" />
+	<node name="ax_mx_arm" pkg="tomato_dynamixel" type="ax_mx_arm" output="screen">
+		<param name="dev" value="/dev/ttyUSB0"/>
+	</node> 
+</launch>
+

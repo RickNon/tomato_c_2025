@@ -1,6 +1,6 @@
-# tomato2023
+# tomato2025 C-team
 
-## Projects
+## Existing Projects
 - tomato_pubsub
 - tomato_joycon
 - tomato_kobuki
@@ -12,6 +12,6 @@
 $ mkdir -p ~/catkin_ws/src
 $ cd ~/catkin_ws/src
 $ git clone 
-$ cd tomato2023
+$ cd [this repository]
 $ catkin build
 ```
