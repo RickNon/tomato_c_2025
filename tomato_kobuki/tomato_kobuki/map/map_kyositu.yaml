@@ -1,4 +1,4 @@
-image: /home/nonomura/catkin_ws/src/tomato_c_2025/tomato_kobuki/tomato_kobuki/map/map_kyositu.pgm
+image: /home/ubuntu/tomato_ws/src/tomato_c_2025/tomato_kobuki/tomato_kobuki/map/map_kyositu.pgm
 resolution: 0.050000
 origin: [-100.000000, -100.000000, 0.000000]
 negate: 0
