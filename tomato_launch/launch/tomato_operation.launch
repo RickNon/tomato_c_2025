@@ -13,14 +13,5 @@
             <param name="dev" value="/dev/ttyUSB2"/>
         </node> 
 
-    <!-- Camera -->
-    <!-- /dev/video -->
-    <!-- 0: Camera1, 2: Camera2 -->
-    <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
-    <param name="video_device" type="string" value="/dev/video0"/>
-    </node>
-    <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image2" output="screen">
-    <param name="video_device" type="string" value="/dev/video2"/>
-    </node>
-
+	<!-- Camera -->
 </launch>
