@@ -23,7 +23,7 @@
   <node pkg="tf" type="static_transform_publisher" name="base_to_laser" 
       args="0 0 0.1 0 0 0 base_footprint laser 100" />
 
-  <!-- <node name="joy_node" pkg="joy" type="joy_node" output="screen"/> -->
+  <node name="joy_node" pkg="joy" type="joy_node" output="screen"/>
  
   <!-- <node name="kobuki_operation" pkg="tomato_kobuki" type="kobuki_operation" output="screen"/> -->
   <node pkg="tomato_kobuki"
@@ -31,14 +31,6 @@
         name="kobuki_operation"
         output="screen">
     <remap from="cmd_vel" to="/kobuki_operation/cmd_vel"/> 
-  </node>
-
-
-  <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
-    <param name="video_device" type="string" value="/dev/video0"/>
-  </node>
-  <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
-    <param name="video_device" type="string" value="/dev/video2"/>
   </node>
  
 
