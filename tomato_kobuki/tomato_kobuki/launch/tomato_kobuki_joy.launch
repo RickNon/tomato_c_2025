@@ -32,6 +32,12 @@
         output="screen">
     <remap from="cmd_vel" to="/kobuki_operation/cmd_vel"/> 
   </node>
- 
+  
+  <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
+  <param name="video_device" type="string" value="/dev/video0"/>
+  </node>
+  <node pkg="tomato_launch" type="usb_cam_silent.sh" name="cam_image1" output="screen">
+  <param name="video_device" type="string" value="/dev/video2"/>
+  </node>
 
 </launch>
