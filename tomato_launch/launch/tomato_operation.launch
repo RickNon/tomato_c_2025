@@ -13,5 +13,4 @@
             <param name="dev" value="/dev/ttyUSB2"/>
         </node> 
 
-	<!-- Camera -->
 </launch>

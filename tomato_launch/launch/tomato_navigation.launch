@@ -38,7 +38,4 @@
       args="/mobile_base/commands/velocity /kobuki_operation/cmd_vel"
       output="screen"/>
 
-  <!-- Camera -->
-
-
 </launch>
