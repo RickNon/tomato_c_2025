@@ -75,6 +75,23 @@ InverseAngles inversed_kinematics(float hand_pos_x, float hand_pos_y, float hand
   // ROS_INFO("position123 %lf, position2 %lf, position3 %lf", alpha, beta, gamma);
   return {alpha - float(M_PI)/2, beta, gamma};
 }
+InverseAngle inversed_kinematics2(float hand_pos_x, float hand_pos_y, float hand_angle){
+  float l_0 = 83;
+  float l_1 = 83;
+  float l_2 = 0;
+  float x_2 = hand_pos_x - l_2 * cos(hand_angle);
+  float y_2 = hand_pos_y - l_2 * sin(hand_angle);
+  float L_02 = sqrt(x_2*x_2 + y_2*y_2);
+  if(L_02 > l_0 + l_1) L_02 = l_0+l_1-1;
+  
+  float cosbeta = -(l_1*l_1+l_0*l_0-L_02*L_02)/(2*l_1*l_0);
+  float beta = acos(cosbeta);
+  float sinbeta = sin(beta);
+  float alpha = atan_0_to_pi(y_2, x_2)+asin(l_1*sinbeta/L_02);
+  float gamma = hand_angle - alpha + beta;
+  // ROS_INFO("position123 %lf, position2 %lf, position3 %lf", alpha, beta, gamma);
+  return {alpha - float(M_PI)/2, -beta, gamma};
+}
 
 void hand_picth() {
   // pitch up/down
