@@ -250,19 +250,30 @@ int main(int argc, char** argv) {
     }
     gsync_ax->txPacket();
 
-    // Write velocity to MX motor
-    dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_MX_ID, ADDR_GOAL_VELOCITY_P2, vel_mx_write, &dxl_error);
+    // Write velocity to MX motor if MX is in proper range of position
+    mx_pos = mx_expos_read(DXL_MX_ID);
+    int16_t vel_to_send = 0;
+    if (mx_pos >= MX_MIN_POSITION && mx_pos <= MX_MAX_POSITION) {
+      vel_to_send = vel_mx_write;
+    }
+    else if (mx_pos < MX_MIN_POSITION) {
+      if (vel_mx_write > 0) {
+        vel_to_send = vel_mx_write;
+      }
+    }
+    else /* mx_pos > MX_MAX_POSITION */ {
+      if (vel_mx_write < 0) {
+        vel_to_send = vel_mx_write;
+      }
+    }
+    dxl_comm_result = packetHandler2->write4ByteTxRx(
+        portHandler,
+        DXL_MX_ID,
+        ADDR_GOAL_VELOCITY_P2,
+        vel_to_send,
+        &dxl_error);
     if (dxl_comm_result != COMM_SUCCESS) {
       ROS_ERROR("Failed to set velocity for MX ID %d", DXL_MX_ID);
-    }
-
-    mx_pos = mx_expos_read(DXL_MX_ID);
-    ROS_INFO("MX pos: %d", mx_pos);
-    if(mx_pos < MX_MIN_POSITION) {
-      ROS_INFO("mx under!!!!!");
-    }
-    else if(mx_pos > MX_MAX_POSITION){
-      ROS_INFO("mx over!!!!!");
     }
 
     // Update IK target and compute new positions
