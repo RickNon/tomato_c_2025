@@ -35,6 +35,8 @@ float scale_hand = 3.0f;
 float cmd_x = 0.0f;
 float cmd_y = 0.0f;
 
+int32_t mx_pos;
+
 const uint16_t MOVING_SPEED_P1 = 100;
 GroupSyncWrite* gsync_ax = nullptr;
 
@@ -117,6 +119,20 @@ void hand_operation() {
   if (next > 600) next = 600;
 
   position_ax[HAND_IDX] = static_cast<uint16_t>(next);
+}
+
+int mx_expos_read(uint8_t id)
+{
+  int32_t dxl_pos;
+  dxl_comm_result = packetHandler2->read4ByteTxRx(portHandler, id, ADDR_PRESENT_POSITION_P2, (uint32_t *)&dxl_pos, &dxl_error);
+  if (dxl_comm_result == COMM_SUCCESS){
+    // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", id, dxl_pos);
+    return dxl_pos;
+  }
+  else{
+    ROS_ERROR("ID: %d  Failed to get position! Result: %d", id, dxl_comm_result);
+    return -1;
+  }
 }
 
 void joyCallback(const sensor_msgs::Joy& msg) {
@@ -238,6 +254,15 @@ int main(int argc, char** argv) {
     dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_MX_ID, ADDR_GOAL_VELOCITY_P2, vel_mx_write, &dxl_error);
     if (dxl_comm_result != COMM_SUCCESS) {
       ROS_ERROR("Failed to set velocity for MX ID %d", DXL_MX_ID);
+    }
+
+    mx_pos = mx_expos_read(DXL_MX_ID);
+    ROS_INFO("MX pos: %d", mx_pos);
+    if(mx_pos < MX_MIN_POSITION) {
+      ROS_INFO("mx under!!!!!");
+    }
+    else if(mx_pos > MX_MAX_POSITION){
+      ROS_INFO("mx over!!!!!");
     }
 
     // Update IK target and compute new positions

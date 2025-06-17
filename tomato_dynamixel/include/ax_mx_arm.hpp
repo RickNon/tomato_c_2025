@@ -51,6 +51,8 @@ namespace dynamixel {
 #define ADDR_PRESENT_CURRENT_P2  126
 #define ADDR_PRESENT_VELOCITY_P2 128
 #define ADDR_PRESENT_POSITION_P2 132
+#define MX_MAX_POSITION          43000
+#define MX_MIN_POSITION          -44000
 
 // Control table addresses for AX (protocol 1)
 #define ADDR_TORQUE_ENABLE_P1    24
