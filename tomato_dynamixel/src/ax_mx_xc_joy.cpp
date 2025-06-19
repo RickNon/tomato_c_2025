@@ -39,10 +39,13 @@ using namespace dynamixel;
 #define CURRENT_MODE          0
 #define VELOCITY_MODE         1
 #define POSITION_MODE         3
+#define C_BASED_P_MODE        5
 
 #define NODE_FREQUENCY        200
+#define TORQUE_STOP_THRESHOLD  80 
 
-//#define STOP_CURRENT_VALUE    ???
+bool torque_exceeded = false;
+
 
 PortHandler * portHandler;
 PacketHandler * packetHandler1;
@@ -53,12 +56,15 @@ int dxl_comm_result = COMM_TX_FAIL;
 uint16_t position_ax_read = 0;
 uint16_t position_ax_write = 512; // 0~1023
 
+
 int16_t vel_mx_read = 0;
 int16_t vel_mx_write = 0; // -285 ~ 285
 
-int16_t vel_xc_read = 0;
-int16_t vel_xc_write = 0; // -285 ~ 285(?)
-int16_t cur_xc_read = 0;
+uint16_t position_xc_read = 0;
+int32_t goal_position_xc = 2048; // 中央（0~4095+）１回転（）
+uint16_t torque_limit_ma = 50;  // 0〜920
+uint16_t raw_current=0;
+int16_t present_current=0;
 
 
 
@@ -68,8 +74,9 @@ float vel_ax = 0.0;
 float scale_mx = 300.0;
 float vel_mx = 0.0;
 
-float scale_xc = 1.0;
+float scale_xc = 100.0;
 float vel_xc = 0.0;
+
 
 
 
@@ -77,21 +84,14 @@ void joyCallback(const sensor_msgs::Joy& msg)
 {
   vel_ax = msg.axes[0]*scale_ax;
   vel_mx_write = msg.axes[1]*scale_mx;   
-  vel_xc_write = msg.axes[1]*scale_xc;   
+  vel_xc = (msg.axes[5]-msg.axes[2])*scale_xc;   
+  
 
-  if (vel_mx_write > 250){
-    vel_mx_write = 250;
-  }else if (vel_mx_write  < -250) {
-    vel_mx_write = -250;
-  }
 
-  //調整後実装
-  /*if (vel_xc_write > 250){
-    vel_xc_write = 250;
-  }else if (vel_xc_write  < -250) {
-    vel_xc_write = -250;
-  }
-    */
+  
+
+
+  
 }
 
 int main(int argc, char ** argv)
@@ -143,9 +143,9 @@ int main(int argc, char ** argv)
 
   //XCモードセット
   //dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_OPERATING_MODE_P2, CURRENT_MODE, &dxl_error);
-  dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_OPERATING_MODE_P2, VELOCITY_MODE, &dxl_error);
+  //dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_OPERATING_MODE_P2, VELOCITY_MODE, &dxl_error);
   //dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_OPERATING_MODE_P2, POSITION_MODE, &dxl_error);
-
+  dxl_comm_result =packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_OPERATING_MODE_P2, C_BASED_P_MODE, &dxl_error);
   if (dxl_comm_result == COMM_SUCCESS) {
     // ROS_INFO("Success to change mode for Dynamixel ID %d", DXL_XC_ID); 
   }else{
@@ -161,6 +161,14 @@ int main(int argc, char ** argv)
     ROS_ERROR("Failed to enable torque for Dynamixel ID %d", DXL_MX_ID);
     return -1;
   }
+
+  //XCトルク制御
+  dxl_comm_result = packetHandler2->write2ByteTxRx(
+    portHandler, DXL_XC_ID, ADDR_GOAL_CURRENT_P2, torque_limit_ma, &dxl_error);
+if (dxl_comm_result != COMM_SUCCESS) {
+    ROS_ERROR("Failed to set torque limit");
+    return -1;
+}
 
   //XCトルクON
   dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_TORQUE_ENABLE_P2, 1, &dxl_error);
@@ -189,9 +197,9 @@ int main(int argc, char ** argv)
     dxl_comm_result = packetHandler1->read2ByteTxRx(portHandler, DXL_AX1_ID, ADDR_PRESENT_POSITION_P1, (uint16_t *)&position_ax_read, &dxl_error);
     if (dxl_comm_result == COMM_SUCCESS)
     {
-      ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_AX1_ID, position_ax_read);
+     // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_AX1_ID, position_ax_read);
     } else {
-      ROS_ERROR("Failed to get position! Result: %d", dxl_comm_result);
+      ROS_ERROR("AXFailed to get position! Result: %d", dxl_comm_result);
     }
 
     ///* MX velocity mode
@@ -206,45 +214,51 @@ int main(int argc, char ** argv)
       dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_MX_ID, ADDR_PRESENT_VELOCITY_P2, (uint16_t *)&vel_mx_read, &dxl_error);
       if (dxl_comm_result == COMM_SUCCESS)
       {
-        ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_MX_ID, vel_mx_read);
+       // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_MX_ID, vel_mx_read);
       } else {
-        ROS_INFO("Failed to get position! Result: %d", dxl_comm_result);
+        ROS_INFO("MXFailed to get position! Result: %d", dxl_comm_result);
       }
 
-    ///* XC velocity mode
-      //電流読み取り
-      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, (uint16_t *)&vel_xc_read, &dxl_error);
-      if (dxl_comm_result == COMM_SUCCESS)
-      {
-        ROS_INFO("getCurrent : [ID:%d] -> [CURRENT:%d]", DXL_XC_ID, cur_xc_read);
-      } else {
-        ROS_INFO("Failed to get Current! Result: %d", dxl_comm_result);
-      }
+    ///* XC C based P mode
       
-      //電流値判定 確認後実装
-      /*
-      if (STOP_CURRENT_VALUE>???)
-      {
-        vel_xc_write = 0.0;
-      }
-      */
-
       
-      //速度書き込み
-      dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_XC_ID, ADDR_GOAL_VELOCITY_P2, vel_xc_write, &dxl_error);
+      //位置書き込み
+      dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_XC_ID, ADDR_GOAL_POSITION_P2, goal_position_xc, &dxl_error);
       if (dxl_comm_result == COMM_SUCCESS) {
-        //ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_XC_ID, vel_xc_write);
+        ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_XC_ID, goal_position_xc);
       } else {
         ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
       }
 
-      //速度読み込み
-      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_VELOCITY_P2, (uint16_t *)&vel_xc_read, &dxl_error);
+      //位置読み込み
+      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_POSITION_P2, (uint16_t *)&position_xc_read, &dxl_error);
+    if (dxl_comm_result == COMM_SUCCESS)
+    {
+     ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_XC_ID, position_xc_read);
+    } else {
+      ROS_ERROR("XCFailed to get position! Result: %d", dxl_comm_result);
+    }
+
+
+      //電流読み取り
+      //dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, (uint16_t *)&cur_xc_read, &dxl_error);
+
+      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, &raw_current, &dxl_error);
+      present_current = static_cast<int16_t>(raw_current);
+
+
       if (dxl_comm_result == COMM_SUCCESS)
       {
-        ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_XC_ID, vel_xc_read);
+        ROS_INFO("getCurrent : [ID:%d] -> [CURRENT:%d]", DXL_XC_ID, present_current);
+          if (abs(present_current) > TORQUE_STOP_THRESHOLD) {
+            ROS_WARN("⚠️ Torque exceeded! Stopping motion.");
+              torque_exceeded = true;
+          }else{
+            torque_exceeded = false;
+          }
+
       } else {
-        ROS_INFO("Failed to get position! Result: %d", dxl_comm_result);
+        ROS_INFO("Failed to get Current! Result: %d", dxl_comm_result);
       }
 
 
@@ -253,6 +267,17 @@ int main(int argc, char ** argv)
     position_ax_write = position_ax_write + int(vel_ax);
     if (position_ax_write > 700) position_ax_write = 700;
     else if (position_ax_write  < 300) position_ax_write = 300;
+
+    if (!torque_exceeded) {
+
+    goal_position_xc += static_cast<int32_t>(vel_xc);
+
+  if (goal_position_xc > 4095) goal_position_xc = 4095;
+  if (goal_position_xc < 0)    goal_position_xc = 0;
+
+  } else {
+    // 動かさない（goal_position_xc更新なし）
+}
 
     cycle_rate.sleep();
   }
