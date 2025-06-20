@@ -210,17 +210,26 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_TORQUE_ENABLE_P1, 0, &dxl_error);
+
     // Set AX servo of hand to wheel mode
-  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CW_P1, 0, &dxl_error);
+  dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CW_P1, 0, &dxl_error);
   if (dxl_comm_result != COMM_SUCCESS)
   {
     ROS_ERROR("Failed to enable wheel mode CW for AX of hand ID %d", HAND_ID);
     return -1;
   }
-  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CCW_P1, 0, &dxl_error);
+  dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CCW_P1, 0, &dxl_error);
   if (dxl_comm_result != COMM_SUCCESS)
   {
     ROS_ERROR("Failed to enable wheel mode CCW for AX of hand ID %d", HAND_ID);
+    return -1;
+  }
+
+  dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, 30, 1023, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+    ROS_ERROR("Failed to set vel AX of hand ID %d", HAND_ID);
     return -1;
   }
 
@@ -267,10 +276,12 @@ int main(int argc, char** argv) {
 
     // Write velocity to AX servo of hand 
     dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, 32, velocity_ax_hand, &dxl_error);
-        if (dxl_comm_result != COMM_SUCCESS) {
+    if (dxl_comm_result != COMM_SUCCESS) {
       ROS_ERROR("Failed to set velocity for AX ID %d", HAND_ID);
     }
-
+    ROS_INFO("velocity = %d", velocity_ax_hand);
+    
+    
     // Write velocity to MX motor if MX is in proper range of position
     mx_pos = mx_expos_read(DXL_MX_ID);
     int16_t vel_to_send = 0;
