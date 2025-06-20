@@ -3,7 +3,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <std_msgs/String.h>
 #include <algorithm>
-#include "ax_mx_arm.hpp"  // Include corresponding header
+#include "ax_mx_arm2.hpp"  // Include corresponding header
 
 using namespace dynamixel;
 
@@ -31,7 +31,7 @@ int pitch_flat = 512;
 bool hand_left = false;             // hand left rotation
 bool hand_right = false;            // hand right rotation
 float scale_hand = 3.0f;
-float velocity_hand = 10.0f;
+float velocity_hand = 30.0f;
 
 float cmd_x = 0.0f;
 float cmd_y = 0.0f;
@@ -210,15 +210,7 @@ int main(int argc, char** argv) {
     return -1;
   }
 
-  // Enable torque for AX servor of hand
-  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_TORQUE_ENABLE_P1, 1, &dxl_error);
-  if (dxl_comm_result != COMM_SUCCESS)
-  {
-    ROS_ERROR("Failed to enable torque for AX of hand ID %d", HAND_ID);
-    return -1;
-  }
-
-  // Set AX servo of hand to wheel mode
+    // Set AX servo of hand to wheel mode
   dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CW_P1, 0, &dxl_error);
   if (dxl_comm_result != COMM_SUCCESS)
   {
@@ -229,6 +221,14 @@ int main(int argc, char** argv) {
   if (dxl_comm_result != COMM_SUCCESS)
   {
     ROS_ERROR("Failed to enable wheel mode CCW for AX of hand ID %d", HAND_ID);
+    return -1;
+  }
+
+  // Enable torque for AX servor of hand
+  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_TORQUE_ENABLE_P1, 1, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+    ROS_ERROR("Failed to enable torque for AX of hand ID %d", HAND_ID);
     return -1;
   }
 
@@ -266,7 +266,7 @@ int main(int argc, char** argv) {
     gsync_ax->txPacket();
 
     // Write velocity to AX servo of hand 
-    dxl_comm_result = packetHandler->write2ByteTxRx(portHandler, HAND_ID, 32, velocity_ax_hand, &dxl_error);
+    dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, 32, velocity_ax_hand, &dxl_error);
         if (dxl_comm_result != COMM_SUCCESS) {
       ROS_ERROR("Failed to set velocity for AX ID %d", HAND_ID);
     }

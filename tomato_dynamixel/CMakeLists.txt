@@ -36,3 +36,6 @@ target_link_libraries(ax_joy ${catkin_LIBRARIES})
 
 add_executable(ax_mx_arm src/ax_mx_arm.cpp)
 target_link_libraries(ax_mx_arm ${catkin_LIBRARIES})
+
+add_executable(ax_mx_arm2 src/ax_mx_arm2.cpp)
+target_link_libraries(ax_mx_arm2 ${catkin_LIBRARIES})
