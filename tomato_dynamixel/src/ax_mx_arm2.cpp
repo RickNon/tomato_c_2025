@@ -31,7 +31,7 @@ int pitch_flat = 512;
 bool hand_left = false;             // hand left rotation
 bool hand_right = false;            // hand right rotation
 float scale_hand = 3.0f;
-float velocity_hand = 30.0f;
+float velocity_hand = 450.0f;
 
 float cmd_x = 0.0f;
 float cmd_y = 0.0f;
@@ -109,7 +109,7 @@ void hand_picth() {
 void hand_operation() {
   // left/right rotation for hand servo
   if (hand_left)  velocity_ax_hand = static_cast<uint16_t>(velocity_hand);
-  else if (hand_right) velocity_ax_hand = -static_cast<uint16_t>(velocity_hand);
+  else if (hand_right) velocity_ax_hand = static_cast<uint16_t>(velocity_hand) + 1024;
   else velocity_ax_hand = 0;
 
 }
@@ -279,7 +279,7 @@ int main(int argc, char** argv) {
     if (dxl_comm_result != COMM_SUCCESS) {
       ROS_ERROR("Failed to set velocity for AX ID %d", HAND_ID);
     }
-    ROS_INFO("velocity = %d", velocity_ax_hand);
+    // ROS_INFO("velocity = %d", velocity_ax_hand);
     
     
     // Write velocity to MX motor if MX is in proper range of position
