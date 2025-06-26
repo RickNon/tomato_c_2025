@@ -90,6 +90,24 @@ InverseAngles inversed_kinematics(float hand_pos_x, float hand_pos_y, float hand
   return {alpha - float(M_PI)/2, beta, gamma};
 }
 
+InverseAngles inversed_kinematics2(float hand_pos_x, float hand_pos_y, float hand_angle){
+  float l_0 = 83;
+  float l_1 = 83;
+  float l_2 = 0;
+  float x_2 = hand_pos_x - l_2 * cos(hand_angle);
+  float y_2 = hand_pos_y - l_2 * sin(hand_angle);
+  float L_02 = sqrt(x_2*x_2 + y_2*y_2);
+  if(L_02 > l_0 + l_1) L_02 = l_0+l_1-1;
+  
+  float cosbeta = -(l_1*l_1+l_0*l_0-L_02*L_02)/(2*l_1*l_0);
+  float beta = acos(cosbeta);
+  float sinbeta = sin(beta);
+  float alpha = atan_0_to_pi(y_2, x_2)+asin(l_1*sinbeta/L_02);
+  float gamma = hand_angle - alpha + beta;
+  // ROS_INFO("position123 %lf, position2 %lf, position3 %lf", alpha, beta, gamma);
+  return {alpha - float(M_PI)/2, -beta, gamma};
+}
+
 void hand_picth() {
   // pitch up/down
   if (pitch_up) {
@@ -279,11 +297,14 @@ int main(int argc, char** argv) {
     // Update IK target and compute new positions
     target_point.point.x += cmd_x;
     target_point.point.y += cmd_y;
-    if (27556 < target_point.point.x*target_point.point.x + target_point.point.y*target_point.point.y){
+
+    if (25000 < target_point.point.x*target_point.point.x + target_point.point.y*target_point.point.y || target_point.point.y < 24 || target_point.point.x < -10){
       target_point.point.x -= cmd_x;
       target_point.point.y -= cmd_y;
     }
-    InverseAngles inv_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
+    ROS_INFO("x = %lf, y = %lf", target_point.point.x, target_point.point.y);
+    InverseAngles inv_res = inversed_kinematics2(target_point.point.x, target_point.point.y, M_PI/2);v_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
+
     position_ax[1] = int(inv_res.A_angle_2 / M_PI / 2 * 1024 + 512);
     position_ax[2] = int(inv_res.A_angle_3 / M_PI / 2 * 1024 + 512);
     position_ax[3] = int(inv_res.A_angle_4 / M_PI / 2 * 1024 + 512);
