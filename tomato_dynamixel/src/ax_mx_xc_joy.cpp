@@ -61,7 +61,7 @@ int16_t vel_mx_read = 0;
 int16_t vel_mx_write = 0; // -285 ~ 285
 
 uint16_t position_xc_read = 0;
-int32_t goal_position_xc = 2048; // 中央（0~4095+）１回転（）
+int32_t goal_position_xc = 0; // 中央（0~4095+）１回転（）
 uint16_t torque_limit_ma = 50;  // 0〜920
 uint16_t raw_current=0;
 int16_t present_current=0;
