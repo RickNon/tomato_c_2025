@@ -59,6 +59,8 @@ namespace dynamixel {
 #define ADDR_GOAL_POSITION_P1    30
 #define ADDR_PRESENT_POSITION_P1 36
 #define ADDR_MOVING_SPEED_P1     32
+#define ADDR_ANGLE_LINMIT_CW_P1  6
+#define ADDR_ANGLE_LINMIT_CCW_P1 8
 
 extern dynamixel::PortHandler *portHandler;       // Serial port handler
 extern dynamixel::PacketHandler *packetHandler1;  // AX packet handler

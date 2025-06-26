@@ -26,6 +26,10 @@ $ roslaunch tomato_dynamixel joy_ax.launch
 $ roslaunch tomato_dynamixel joy_ax_mx.launch
 ```
 ```bash
+# joy+AX+MX+XC用のテスト(ID1およびID10,ID20がコントローラで回転)
+$ roslaunch tomato_dynamixel joy_ax_mx_xc.launch
+```
+```bash
 # XC用のテスト(ID20が回転)
 $ roslaunch tomato_dynamixel xc_pos.launch
 ```

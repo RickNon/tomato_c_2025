@@ -3,7 +3,7 @@
 #include <geometry_msgs/PointStamped.h>
 #include <std_msgs/String.h>
 #include <algorithm>
-#include "ax_mx_arm.hpp"  // Include corresponding header
+#include "ax_mx_arm2.hpp"  // Include corresponding header
 
 using namespace dynamixel;
 
@@ -31,6 +31,7 @@ int pitch_flat = 512;
 bool hand_left = false;             // hand left rotation
 bool hand_right = false;            // hand right rotation
 float scale_hand = 3.0f;
+float velocity_hand = 450.0f;
 
 float cmd_x = 0.0f;
 float cmd_y = 0.0f;
@@ -41,7 +42,7 @@ const uint16_t MOVING_SPEED_P1 = 100;
 GroupSyncWrite* gsync_ax = nullptr;
 
 // Set AX IDs
-std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID, DXL_AX5_ID };
+std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID};
 std::vector<int> position_ax(DXL_AX_ID.size(), position_ax_write);
 
 // Set AX for pitch
@@ -53,10 +54,7 @@ const size_t PITCH_IDX = std::distance(
 
 // Set AX for hand
 const int HAND_ID = DXL_AX5_ID;
-const size_t HAND_IDX = std::distance(
-    DXL_AX_ID.begin(),
-    std::find(DXL_AX_ID.begin(), DXL_AX_ID.end(), HAND_ID)
-);
+int velocity_ax_hand = 0;  // Velocity for hand servo
 
 float atan_0_to_pi(float y, float x) {
   float angle = std::atan2(y, x);
@@ -90,24 +88,6 @@ InverseAngles inversed_kinematics(float hand_pos_x, float hand_pos_y, float hand
   return {alpha - float(M_PI)/2, beta, gamma};
 }
 
-InverseAngles inversed_kinematics2(float hand_pos_x, float hand_pos_y, float hand_angle){
-  float l_0 = 83;
-  float l_1 = 83;
-  float l_2 = 0;
-  float x_2 = hand_pos_x - l_2 * cos(hand_angle);
-  float y_2 = hand_pos_y - l_2 * sin(hand_angle);
-  float L_02 = sqrt(x_2*x_2 + y_2*y_2);
-  if(L_02 > l_0 + l_1) L_02 = l_0+l_1-1;
-  
-  float cosbeta = -(l_1*l_1+l_0*l_0-L_02*L_02)/(2*l_1*l_0);
-  float beta = acos(cosbeta);
-  float sinbeta = sin(beta);
-  float alpha = atan_0_to_pi(y_2, x_2)+asin(l_1*sinbeta/L_02);
-  float gamma = hand_angle - alpha + beta;
-  // ROS_INFO("position123 %lf, position2 %lf, position3 %lf", alpha, beta, gamma);
-  return {alpha - float(M_PI)/2, -beta, gamma};
-}
-
 void hand_picth() {
   // pitch up/down
   if (pitch_up) {
@@ -128,15 +108,10 @@ void hand_picth() {
 
 void hand_operation() {
   // left/right rotation for hand servo
+  if (hand_left)  velocity_ax_hand = static_cast<uint16_t>(velocity_hand);
+  else if (hand_right) velocity_ax_hand = static_cast<uint16_t>(velocity_hand) + 1024;
+  else velocity_ax_hand = 0;
 
-  int next = static_cast<int>(position_ax[HAND_IDX]);
-  if (hand_left)  next += static_cast<int>(scale_hand);
-  if (hand_right) next -= static_cast<int>(scale_hand);
-
-  if (next < 0)    next = 0;
-  if (next > 600) next = 600;
-
-  position_ax[HAND_IDX] = static_cast<uint16_t>(next);
 }
 
 int mx_expos_read(uint8_t id)
@@ -235,6 +210,37 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_TORQUE_ENABLE_P1, 0, &dxl_error);
+
+    // Set AX servo of hand to wheel mode
+  dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CW_P1, 0, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+    ROS_ERROR("Failed to enable wheel mode CW for AX of hand ID %d", HAND_ID);
+    return -1;
+  }
+  dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, ADDR_ANGLE_LINMIT_CCW_P1, 0, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+    ROS_ERROR("Failed to enable wheel mode CCW for AX of hand ID %d", HAND_ID);
+    return -1;
+  }
+
+  dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, 30, 1023, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+    ROS_ERROR("Failed to set vel AX of hand ID %d", HAND_ID);
+    return -1;
+  }
+
+  // Enable torque for AX servor of hand
+  dxl_comm_result = packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_TORQUE_ENABLE_P1, 1, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS)
+  {
+    ROS_ERROR("Failed to enable torque for AX of hand ID %d", HAND_ID);
+    return -1;
+  }
+
   // Set MX to velocity mode and enable torque
   dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_MX_ID, ADDR_OPERATING_MODE_P2, VELOCITY_MODE, &dxl_error);
   if (dxl_comm_result != COMM_SUCCESS) {
@@ -268,6 +274,14 @@ int main(int argc, char** argv) {
     }
     gsync_ax->txPacket();
 
+    // Write velocity to AX servo of hand 
+    dxl_comm_result = packetHandler1->write2ByteTxRx(portHandler, HAND_ID, 32, velocity_ax_hand, &dxl_error);
+    if (dxl_comm_result != COMM_SUCCESS) {
+      ROS_ERROR("Failed to set velocity for AX ID %d", HAND_ID);
+    }
+    // ROS_INFO("velocity = %d", velocity_ax_hand);
+    
+    
     // Write velocity to MX motor if MX is in proper range of position
     mx_pos = mx_expos_read(DXL_MX_ID);
     int16_t vel_to_send = 0;
@@ -297,14 +311,11 @@ int main(int argc, char** argv) {
     // Update IK target and compute new positions
     target_point.point.x += cmd_x;
     target_point.point.y += cmd_y;
-
-    if (25000 < target_point.point.x*target_point.point.x + target_point.point.y*target_point.point.y || target_point.point.y < 24 || target_point.point.x < -10){
+    if (27556 < target_point.point.x*target_point.point.x + target_point.point.y*target_point.point.y){
       target_point.point.x -= cmd_x;
       target_point.point.y -= cmd_y;
     }
-    ROS_INFO("x = %lf, y = %lf", target_point.point.x, target_point.point.y);
-    InverseAngles inv_res = inversed_kinematics2(target_point.point.x, target_point.point.y, M_PI/2);v_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
-
+    InverseAngles inv_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
     position_ax[1] = int(inv_res.A_angle_2 / M_PI / 2 * 1024 + 512);
     position_ax[2] = int(inv_res.A_angle_3 / M_PI / 2 * 1024 + 512);
     position_ax[3] = int(inv_res.A_angle_4 / M_PI / 2 * 1024 + 512);
@@ -320,6 +331,7 @@ int main(int argc, char** argv) {
 
   // Disable torque and close port
   packetHandler1->write1ByteTxRx(portHandler, DXL_AX1_ID, ADDR_TORQUE_ENABLE_P1, 0, &dxl_error);
+  packetHandler1->write1ByteTxRx(portHandler, HAND_ID, ADDR_TORQUE_ENABLE_P1, 0, &dxl_error);
   packetHandler2->write1ByteTxRx(portHandler, DXL_MX_ID, ADDR_TORQUE_ENABLE_P2, 0, &dxl_error);
   portHandler->closePort();
   return 0;
