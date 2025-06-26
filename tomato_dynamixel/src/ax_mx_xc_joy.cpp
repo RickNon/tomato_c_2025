@@ -268,8 +268,14 @@ if (dxl_comm_result != COMM_SUCCESS) {
     goal_position_xc += static_cast<int32_t>(vel_xc);
     ROS_INFO("goal position xc: %d", goal_position_xc);
 
-    if (goal_position_xc > 700) goal_position_xc = 700;
-    if (goal_position_xc < 0)    goal_position_xc = 0;
+    if (goal_position_xc > 700) {
+      goal_position_xc = 700;
+      ROS_INFO("Basket Open MAX");
+    }
+    if (goal_position_xc < 0) {
+      goal_position_xc = 0;
+      ROS_INFO("Basket Close MIN");
+    }
 
 
     
