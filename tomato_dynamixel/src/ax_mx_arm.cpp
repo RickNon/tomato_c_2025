@@ -271,10 +271,10 @@ int main(int argc, char** argv) {
     // Write velocity to MX motor if MX is in proper range of position
     mx_pos = mx_expos_read(DXL_MX_ID);
     int16_t vel_to_send = 0;
-    if (mx_pos >= MX_MIN_POSITION && mx_pos <= MX_MAX_POSITION) {
+    if (mx_pos >= -44000 && mx_pos <= 43000) {
       vel_to_send = vel_mx_write;
     }
-    else if (mx_pos < MX_MIN_POSITION) {
+    else if (mx_pos < 43000) {
       if (vel_mx_write > 0) {
         vel_to_send = vel_mx_write;
       }
@@ -303,7 +303,8 @@ int main(int argc, char** argv) {
       target_point.point.y -= cmd_y;
     }
     ROS_INFO("x = %lf, y = %lf", target_point.point.x, target_point.point.y);
-    InverseAngles inv_res = inversed_kinematics2(target_point.point.x, target_point.point.y, M_PI/2);v_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
+    InverseAngles inv_res = inversed_kinematics2(target_point.point.x, target_point.point.y, M_PI/2);
+    // v_res = inversed_kinematics(target_point.point.x, target_point.point.y, M_PI/2);
 
     position_ax[1] = int(inv_res.A_angle_2 / M_PI / 2 * 1024 + 512);
     position_ax[2] = int(inv_res.A_angle_3 / M_PI / 2 * 1024 + 512);
