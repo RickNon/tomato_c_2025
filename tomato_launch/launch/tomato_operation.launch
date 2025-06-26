@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<launch>
+
+    <!-- /dev/ttyUSB -->
+    <!-- 0: Koubki, 1: RPLidar, 2: U2D2 -->
+
+    <!-- Kobuki Operation Joy -->
+    <include file="$(find tomato_kobuki)/launch/tomato_kobuki_joy.launch" />
+
+    <!-- Dynamixel motors -->
+        <!-- 昇降機、アーム、ハンドの制御 -->
+        <node name="ax_mx_arm" pkg="tomato_dynamixel" type="ax_mx_arm" output="screen">
+            <param name="dev" value="/dev/ttyUSB2"/>
+        </node> 
+
+</launch>

@@ -15,15 +15,18 @@ public:
     void spin();
 private:
     void joy_callback(const sensor_msgs::Joy &joy_msg);
-    void kobukiMove(double speed);
+    void cmd_callback(const geometry_msgs::Twist &cmd_msg);
+    void kobukiMove(double speed, double turn);
     void kobukiKeep(double duration, bool exit_w_interrupt = true);
 
     void kobukiStop();
     void kobukiInterpolate();
+    void cmdInterpolate();
     void normalOperation();
 
     ros::NodeHandle _nh;
     ros::Subscriber _joy_sub;
+    ros::Subscriber _cmd_sub;
     ros::Publisher  _kobuki_pub;
 
     const double _freq;
@@ -41,4 +44,5 @@ private:
     int _print_status;
     int _stop_count;
     bool _exit_program;
+    bool _no_acc_limit; // 追加：加速度制限をスキップするかのフラグ
 };

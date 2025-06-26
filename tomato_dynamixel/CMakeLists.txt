@@ -11,8 +11,8 @@ catkin_package(
 )
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
-  Include
 )
 
 add_executable(mx_pos src/mx_pos.cpp)
@@ -30,8 +30,15 @@ target_link_libraries(ax_double_pos ${catkin_LIBRARIES})
 add_executable(ax_joy src/ax_joy.cpp)
 target_link_libraries(ax_joy ${catkin_LIBRARIES})
 
-add_executable(ax_mx_joy src/ax_mx_joy.cpp)
-target_link_libraries(ax_mx_joy ${catkin_LIBRARIES})
+# add_executable(ax_mx_joy src/ax_mx_joy.cpp)
+# target_link_libraries(ax_mx_joy ${catkin_LIBRARIES})
 
+add_executable(ax_mx_arm src/ax_mx_arm.cpp)
+target_link_libraries(ax_mx_arm ${catkin_LIBRARIES})
+
+add_executable(ax_mx_arm2 src/ax_mx_arm2.cpp)
+target_link_libraries(ax_mx_arm2 ${catkin_LIBRARIES})
+
+# basket
 add_executable(ax_mx_xc_joy src/ax_mx_xc_joy.cpp)
 target_link_libraries(ax_mx_xc_joy ${catkin_LIBRARIES})

@@ -71,6 +71,40 @@ void joyCallback(const sensor_msgs::Joy& msg)
     vel_mx_write = -250;
   }
 }
+// mukai add
+////////////////////////////////////////////////////////////////////////////////////
+double inverse_sin_0_to_pi(double x) {
+    if (x >= 0)
+        return std::asin(x);           // x ∈ [0,1], θ ∈ [0, π/2]
+    else
+        return M_PI + std::asin(x);    // x ∈ [-1,0), θ ∈ (π/2, π]
+}
+double atan_0_to_pi(double y, double x) {
+    double theta = std::atan2(y, x);
+    if (theta < 0) theta += M_PI * 2;
+    if (theta > M_PI) theta = 2 * M_PI - theta;
+    return theta; // θ ∈ [0, π]
+}
+struct Result{
+  double A_angle_0;
+  double A_angle_1;
+  double A_angle_2;
+}
+Result inversed_kinematics_mukai(double hand_pos_x,double hand_pos_y,double hand_angle){
+  l_0=83;
+  l_1=83;
+  l_2=50;
+  double x_2 = hand_pos_x - l_2 * cos(hand_angle);
+  double y_2 = hand_pos_y - l_2 * sin(hand_angle);
+  double L_02 = sqrt(x_2*x_2 + y_2*y_2);
+  // double beta = asin((l_1*l_1+l_0*l_0-L02*L02)/(2*l_1*l_0));
+  double sinbeta=(l_1*l_1+l_0*l_0-L02*L02)/(2*l_1*l_0);
+  double beta = inverse_sin_0_to_pi(sinbeta);
+  double alpha = atan_0_to_pi(y_2/x_2)-asin(l_1*sinbeta/L02);
+  double gamma = hand_angle - alpha - beta;
+  return {M_PI/2-alpha, beta, gamma};
+}
+/////////////////////////////////////////////////////////////////////////////////////
 
 int main(int argc, char ** argv)
 {
