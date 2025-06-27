@@ -61,7 +61,7 @@ int16_t vel_mx_read = 0;
 int16_t vel_mx_write = 0; // -285 ~ 285
 
 uint16_t position_xc_read = 0;
-int32_t goal_position_xc = 2048; // 中央（0~4095+）１回転（）
+int32_t goal_position_xc = 0; // 中央（0~4095+）１回転（）
 uint16_t torque_limit_ma = 50;  // 0〜920
 uint16_t raw_current=0;
 int16_t present_current=0;
@@ -74,7 +74,7 @@ float vel_ax = 0.0;
 float scale_mx = 300.0;
 float vel_mx = 0.0;
 
-float scale_xc = 100.0;
+float scale_xc = 20.0;
 float vel_xc = 0.0;
 
 
@@ -84,14 +84,18 @@ void joyCallback(const sensor_msgs::Joy& msg)
 {
   vel_ax = msg.axes[0]*scale_ax;
   vel_mx_write = msg.axes[1]*scale_mx;   
-  vel_xc = (msg.axes[5]-msg.axes[2])*scale_xc;   
-  
+  // vel_xc = (msg.axes[5]-msg.axes[2])*scale_xc;   
+  if(msg.axes[5] < 0.8 && msg.axes[2] < 0.8){
+    vel_xc = 0.0;
+  }else if(msg.axes[5] < 0.8){
+    vel_xc = scale_xc;
+  }else if(msg.axes[2] < 0.8){
+    vel_xc = -scale_xc;
+  }else{
+    vel_xc = 0.0;
+  }
 
-
-  
-
-
-  
+   
 }
 
 int main(int argc, char ** argv)
@@ -204,63 +208,74 @@ if (dxl_comm_result != COMM_SUCCESS) {
 
     ///* MX velocity mode
 
-      dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_MX_ID, ADDR_GOAL_VELOCITY_P2, vel_mx_write, &dxl_error);
-      if (dxl_comm_result == COMM_SUCCESS) {
-        //ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_MX_ID, vel_mx_write);
-      } else {
-        ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
-      }
-   
-      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_MX_ID, ADDR_PRESENT_VELOCITY_P2, (uint16_t *)&vel_mx_read, &dxl_error);
-      if (dxl_comm_result == COMM_SUCCESS)
-      {
-       // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_MX_ID, vel_mx_read);
-      } else {
-        ROS_INFO("MXFailed to get position! Result: %d", dxl_comm_result);
-      }
-
-    ///* XC C based P mode
-      
-      
-      //位置書き込み
-      dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_XC_ID, ADDR_GOAL_POSITION_P2, goal_position_xc, &dxl_error);
-      if (dxl_comm_result == COMM_SUCCESS) {
-        ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_XC_ID, goal_position_xc);
-      } else {
-        ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
-      }
-
-      //位置読み込み
-      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_POSITION_P2, (uint16_t *)&position_xc_read, &dxl_error);
+    dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_MX_ID, ADDR_GOAL_VELOCITY_P2, vel_mx_write, &dxl_error);
+    if (dxl_comm_result == COMM_SUCCESS) {
+      //ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_MX_ID, vel_mx_write);
+    } else {
+      ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
+    }
+  
+    dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_MX_ID, ADDR_PRESENT_VELOCITY_P2, (uint16_t *)&vel_mx_read, &dxl_error);
     if (dxl_comm_result == COMM_SUCCESS)
     {
-     ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_XC_ID, position_xc_read);
+      // ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_MX_ID, vel_mx_read);
+    } else {
+      ROS_INFO("MXFailed to get position! Result: %d", dxl_comm_result);
+    }
+
+    ///* XC C based P mode
+    
+    
+    //位置書き込み
+    dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_XC_ID, ADDR_GOAL_POSITION_P2, goal_position_xc, &dxl_error);
+    if (dxl_comm_result == COMM_SUCCESS) {
+      // ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_XC_ID, goal_position_xc);
+    } else {
+      ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
+    }
+
+    //位置読み込み
+    dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_POSITION_P2, (uint16_t *)&position_xc_read, &dxl_error);
+    if (dxl_comm_result == COMM_SUCCESS)
+    {
+    //  ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_XC_ID, position_xc_read);
     } else {
       ROS_ERROR("XCFailed to get position! Result: %d", dxl_comm_result);
     }
 
 
-      //電流読み取り
-      //dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, (uint16_t *)&cur_xc_read, &dxl_error);
+    //電流読み取り
+    //dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, (uint16_t *)&cur_xc_read, &dxl_error);
 
-      dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, &raw_current, &dxl_error);
-      present_current = static_cast<int16_t>(raw_current);
+    // dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_CURRENT_P2, &raw_current, &dxl_error);
+    // present_current = static_cast<int16_t>(raw_current);
 
 
-      if (dxl_comm_result == COMM_SUCCESS)
-      {
-        ROS_INFO("getCurrent : [ID:%d] -> [CURRENT:%d]", DXL_XC_ID, present_current);
-          if (abs(present_current) > TORQUE_STOP_THRESHOLD) {
-            ROS_WARN("⚠️ Torque exceeded! Stopping motion.");
-              torque_exceeded = true;
-          }else{
-            torque_exceeded = false;
-          }
+    // if (dxl_comm_result == COMM_SUCCESS)
+    // {
+    //   // ROS_INFO("getCurrent : [ID:%d] -> [CURRENT:%d]", DXL_XC_ID, present_current);
+    //     if (abs(present_current) > TORQUE_STOP_THRESHOLD) {
+    //       ROS_WARN("Torque exceeded! Stopping motion.");
+    //         torque_exceeded = true;
+    //     }else{
+    //       torque_exceeded = false;
+    //     }
 
-      } else {
-        ROS_INFO("Failed to get Current! Result: %d", dxl_comm_result);
-      }
+    // } else {
+    //   ROS_INFO("Failed to get Current! Result: %d", dxl_comm_result);
+    // }
 
+    goal_position_xc += static_cast<int32_t>(vel_xc);
+    ROS_INFO("goal position xc: %d", goal_position_xc);
+
+    if (goal_position_xc > 700) {
+      goal_position_xc = 700;
+      ROS_INFO("Basket Open MAX");
+    }
+    if (goal_position_xc < 0) {
+      goal_position_xc = 0;
+      ROS_INFO("Basket Close MIN");
+    }
 
 
     
@@ -268,16 +283,17 @@ if (dxl_comm_result != COMM_SUCCESS) {
     if (position_ax_write > 700) position_ax_write = 700;
     else if (position_ax_write  < 300) position_ax_write = 300;
 
-    if (!torque_exceeded) {
+    // if (!torque_exceeded) {
 
-    goal_position_xc += static_cast<int32_t>(vel_xc);
+    //   goal_position_xc += static_cast<int32_t>(vel_xc);
+    //   ROS_INFO("goal position xc: %d", goal_position_xc);
 
-  if (goal_position_xc > 4095) goal_position_xc = 4095;
-  if (goal_position_xc < 0)    goal_position_xc = 0;
+    //   if (goal_position_xc > 700) goal_position_xc = 700;
+    //   if (goal_position_xc < 0)    goal_position_xc = 0;
 
-  } else {
-    // 動かさない（goal_position_xc更新なし）
-}
+    // } else {
+    //   // 動かさない（goal_position_xc更新なし）
+    // }
 
     cycle_rate.sleep();
   }
