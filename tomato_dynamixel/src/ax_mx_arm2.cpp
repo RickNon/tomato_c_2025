@@ -415,7 +415,7 @@ int main(int argc, char** argv) {
     }
 
     goal_position_xc += static_cast<int32_t>(vel_xc);
-    ROS_INFO("goal position xc: %d", goal_position_xc-offset_goal);
+    // ROS_INFO("goal position xc: %d", goal_position_xc-offset_goal);
 
     if (goal_position_xc-offset_goal > XC_MAX_POSITION) {
       goal_position_xc = XC_MAX_POSITION+offset_goal;
