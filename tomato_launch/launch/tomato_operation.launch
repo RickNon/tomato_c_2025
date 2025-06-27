@@ -9,7 +9,7 @@
 
     <!-- Dynamixel motors -->
         <!-- 昇降機、アーム、ハンドの制御 -->
-        <node name="ax_mx_arm" pkg="tomato_dynamixel" type="ax_mx_arm" output="screen">
+        <node name="ax_mx_arm2" pkg="tomato_dynamixel" type="ax_mx_arm2" output="screen">
             <param name="dev" value="/dev/ttyUSB2"/>
         </node> 
 
