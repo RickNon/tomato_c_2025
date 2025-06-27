@@ -41,6 +41,15 @@ int32_t mx_pos;
 const uint16_t MOVING_SPEED_P1 = 100;
 GroupSyncWrite* gsync_ax = nullptr;
 
+uint16_t position_xc_read = 0;
+int32_t goal_position_xc = 0; // 中央（0~4095+）１回転（）
+uint16_t torque_limit_ma = 50;  // 0〜920
+uint16_t raw_current=0;
+int16_t present_current=0;
+
+float scale_xc = 20.0;
+float vel_xc = 0.0;
+
 // Set AX IDs
 std::vector<int> DXL_AX_ID = { DXL_AX1_ID, DXL_AX2_ID, DXL_AX3_ID, DXL_AX4_ID};
 std::vector<int> position_ax(DXL_AX_ID.size(), position_ax_write);
@@ -177,6 +186,17 @@ void joyCallback(const sensor_msgs::Joy& msg) {
   } else if (vel_mx_write < -250) {
     vel_mx_write = -250;
   }
+
+  // XC Basket
+  if(msg.axes[5] < 0.8 && msg.axes[2] < 0.8){
+    vel_xc = 0.0;
+  }else if(msg.axes[5] < 0.8){
+    vel_xc = scale_xc;
+  }else if(msg.axes[2] < 0.8){
+    vel_xc = -scale_xc;
+  }else{
+    vel_xc = 0.0;
+  }
 }
 
 int main(int argc, char** argv) {
@@ -271,6 +291,41 @@ int main(int argc, char** argv) {
     return -1;
   }
 
+  // XC
+  dxl_comm_result =packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_OPERATING_MODE_P2, C_BASED_P_MODE, &dxl_error);
+  if (dxl_comm_result == COMM_SUCCESS) {
+    // ROS_INFO("Success to change mode for Dynamixel ID %d", DXL_XC_ID); 
+  }else{
+    ROS_ERROR("Failed to change mode for Dynamixel ID %d", DXL_XC_ID);
+    return -1;
+  }
+
+  dxl_comm_result = packetHandler2->write2ByteTxRx(
+    portHandler, DXL_XC_ID, ADDR_GOAL_CURRENT_P2, torque_limit_ma, &dxl_error);
+  if (dxl_comm_result != COMM_SUCCESS) {
+      ROS_ERROR("Failed to set torque limit");
+      return -1;
+  }
+
+  dxl_comm_result = packetHandler2->write1ByteTxRx(portHandler, DXL_XC_ID, ADDR_TORQUE_ENABLE_P2, 1, &dxl_error);
+  if (dxl_comm_result == COMM_SUCCESS) {
+    // ROS_INFO("Success to enable torque for Dynamixel ID %d", DXL_XC_ID); 
+  }else{
+    ROS_ERROR("Failed to enable torque for Dynamixel ID %d", DXL_XC_ID);
+    return -1;
+  }
+
+  dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_POSITION_P2, (uint16_t *)&position_xc_read, &dxl_error);
+  if (dxl_comm_result == COMM_SUCCESS)
+  {
+  //  ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_XC_ID, position_xc_read);
+  } else {
+    ROS_ERROR("XCFailed to get position! Result: %d", dxl_comm_result);
+  }
+
+  goal_position_xc = position_xc_read;
+  int32_t offset_goal = position_xc_read;
+
   // Main loop
   while (ros::ok()) {
     ros::spinOnce();
@@ -338,6 +393,38 @@ int main(int argc, char** argv) {
     position_ax[2] = int(inv_res.A_angle_3 / M_PI / 2 * 1024 + 512);
     position_ax[3] = int(inv_res.A_angle_4 / M_PI / 2 * 1024 + 512);
     // ROS_INFO("position1 %d, position2 %d, position3 %d", position_ax[1], position_ax[2], position_ax[3]);
+
+    ///* XC C based P mode
+    
+    
+    //位置書き込み
+    dxl_comm_result = packetHandler2->write4ByteTxRx(portHandler, DXL_XC_ID, ADDR_GOAL_POSITION_P2, goal_position_xc, &dxl_error);
+    if (dxl_comm_result == COMM_SUCCESS) {
+      // ROS_INFO("setPosition : [ID:%d] [POSITION:%d]", DXL_XC_ID, goal_position_xc);
+    } else {
+      ROS_INFO("Failed to set position! Result: %d", dxl_comm_result);
+    }
+
+    //位置読み込み
+    dxl_comm_result = packetHandler2->read2ByteTxRx(portHandler, DXL_XC_ID, ADDR_PRESENT_POSITION_P2, (uint16_t *)&position_xc_read, &dxl_error);
+    if (dxl_comm_result == COMM_SUCCESS)
+    {
+    //  ROS_INFO("getPosition : [ID:%d] -> [POSITION:%d]", DXL_XC_ID, position_xc_read);
+    } else {
+      ROS_ERROR("XCFailed to get position! Result: %d", dxl_comm_result);
+    }
+
+    goal_position_xc += static_cast<int32_t>(vel_xc);
+    ROS_INFO("goal position xc: %d", goal_position_xc-offset_goal);
+
+    if (goal_position_xc-offset_goal > XC_MAX_POSITION) {
+      goal_position_xc = XC_MAX_POSITION+offset_goal;
+      ROS_INFO("Basket Open MAX");
+    }
+    if (goal_position_xc-offset_goal < 0) {
+      goal_position_xc = 0+offset_goal;
+      ROS_INFO("Basket Close MIN");
+    }
 
     // Publish status message
     std_msgs::String status_msg;

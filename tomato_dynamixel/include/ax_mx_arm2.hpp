@@ -32,15 +32,19 @@ namespace dynamixel {
 
 #define DXL_MX_ID        10     // Gripper motor
 
+#define DXL_XC_ID        20     // Basket motor
+
 #define BAUDRATE         1000000
 
 // Operating modes
 #define CURRENT_MODE     0
 #define VELOCITY_MODE    1
 #define POSITION_MODE    3
+#define C_BASED_P_MODE   5
 
 // Node update frequency (Hz)
 #define NODE_FREQUENCY   200
+#define TORQUE_STOP_THRESHOLD  80
 
 // Control table addresses for MX (protocol 2)
 #define ADDR_OPERATING_MODE_P2   11
@@ -61,6 +65,9 @@ namespace dynamixel {
 #define ADDR_MOVING_SPEED_P1     32
 #define ADDR_ANGLE_LINMIT_CW_P1  6
 #define ADDR_ANGLE_LINMIT_CCW_P1 8
+
+// Basket max open
+#define XC_MAX_POSITION 700
 
 extern dynamixel::PortHandler *portHandler;       // Serial port handler
 extern dynamixel::PacketHandler *packetHandler1;  // AX packet handler
