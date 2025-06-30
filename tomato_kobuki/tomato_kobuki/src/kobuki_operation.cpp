@@ -2,7 +2,7 @@
 #include <geometry_msgs/Twist.h>
 #include <sensor_msgs/Joy.h>
 
-double _g_speed = 0.2;
+double _g_speed = 0.1;
 double _g_turn = 1;
 double motion_v_tmp   = 0.0;
 double rotation_v_tmp = 0.0;
